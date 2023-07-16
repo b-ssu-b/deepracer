@@ -107,3 +107,41 @@ elif closest_waypoints[1] in center_lane and center_variance <0.4:
     reward += 1
 else:
     reward -= 1
+speed_rate = speed / MAX_SPEED
+reward_speed = speed_rate **2
+if closest_waypoints[1] in straight_lane and abs_steering < 5:
+    speed = MAX_SPEED
+
+##### distance_from_center check############
+
+reward_distance=1
+
+if distance_from_center <= marker_1:
+    reward_distance = 1.0
+elif distance_from_center <= marker_2:
+    reward_distance = 0.7
+elif distance_from_center <= marker_3:
+    reward_distance = 0.4
+elif distance_from_center <= marker_4:
+    reward_distance = 0.1
+else:
+    reward_distance = 1e-3  # likely crashed/ close to off track
+
+
+reward_all  = reward + reward_distance
+
+ABS_STEERING_THRESHOLD = 15
+
+# Penalize reward if the car is steering too much
+if closest_waypoints[1] in straight_lane and abs_steering > 5:
+    reward_all *=0.8
+elif closest_waypoints[1] in left_end_lane and abs_steering >10 and params['is_left_of_center']:
+    reward_all *= 0.8
+elif closest_waypoints[1] in right_end_lane and abs_steering >10 and not params['is_left_of_center']:
+    reward_all *= 0.8
+elif closest_waypoints[1] in center_lane and abs_steering > ABS_STEERING_THRESHOLD:
+    reward_all *= 0.8
+else:
+    reward_all = reward_all
+
+return float(reward_all)
